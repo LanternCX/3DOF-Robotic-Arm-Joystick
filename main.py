@@ -17,6 +17,8 @@ print(f"Connect to controller: {joystick.get_name()}")
 
 ser = serial.Serial('/dev/cu.usbserial-0001', 115200, timeout=1)
 
+speed_mode = True
+
 control_val = {
     "A": 0,
     "B": 0,
@@ -46,6 +48,7 @@ handle_map = {
 # main loop
 try:
     while True:
+        command = ''
         # Handle Controller Event
         for event in pygame.event.get():
             # Trigger and Joystick event
@@ -57,15 +60,30 @@ try:
                         control_val[handle_map[axis]] = axis_value
                     else :
                         control_val[handle_map[axis]] = 0.0
+            # Button Event：X -> CATCH ON；Y -> CATCH OFF
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 0:
+                    speed_mode = not speed_mode
+                    print("Speed mode " + "ON" if speed_mode else "OFF")
+                if event.button == 2:  # X 按下
+                    command = "CATCH ON"
+                elif event.button == 3:  # Y 按下
+                    command = "CATCH OFF"
 
         # print(f"x_speed: {control_val['LEFT_JOYSTICK_Y']}, y_speed：{control_val['RIGHT_JOYSTICK_X']}")
 
-        command = (
-                "SPEED "
-                + str(int(control_val['RIGHT_JOYSTICK_Y'] * 30)) + ' '
-                + str(int(control_val['LEFT_JOYSTICK_Y'] * 30)) + ' '
-                + str(int(control_val['RIGHT_JOYSTICK_X'] * 30))
-        )
+        # 计算第四个参数：左板机为正，右板机为负
+        # 负闭合 正张开
+        trigger_val = int(control_val['LEFT_TRIGGER'] * 100 - control_val['RIGHT_TRIGGER'] * 100)
+
+        if speed_mode:
+            command = (
+                    "SPEED "
+                    + str(int(control_val['RIGHT_JOYSTICK_Y'] * 50)) + ' '
+                    + str(int(control_val['LEFT_JOYSTICK_Y'] * 50)) + ' '
+                    + str(int(control_val['RIGHT_JOYSTICK_X'] * 50)) + ' '
+                    + str(trigger_val)
+            )
         ser.write((command + "\n").encode())
         print("Tx: " + command)
 

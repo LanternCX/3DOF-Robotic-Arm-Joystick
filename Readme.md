@@ -1,3 +1,5 @@
-# PTZ-Controller
+# ZhiGrip-Controller
 
-基于手柄控制与串口通信的二维云台上位机
+[LanternCX/ZhiGrip: Voice-controlled 3-DOF visual robotic arm](https://github.com/LanternCX/ZhiGrip)
+
+项目的手柄控制部分
